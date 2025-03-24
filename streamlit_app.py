@@ -65,5 +65,27 @@ def app():
     # Input Box for Account# with placeholder text
     account = st.text_input("Account#", placeholder="Enter Account number")
 
+    # Ongoing/Completed Dropdown
+    status = st.selectbox("Status", options=["Ongoing", "Completed"])
+
+    # Submit Button
+    submit_button = st.button("Submit")
+
+    # Show success message when submit button is clicked
+    if submit_button:
+        # Change the button color to green using custom styling
+        st.markdown("""
+            <style>
+            .stButton>button {
+                background-color: #4CAF50; 
+                color: white;
+                border: none;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+
+        # Display a success message (this simulates a popup-like behavior)
+        st.success("You have successfully submitted the form. Thank you!")
+
 if __name__ == "__main__":
     app()
