@@ -148,7 +148,7 @@ def app():
         else:
             st.info("No form submissions available.")
 
-        # ✅ Logout button for admin (Only on the top now)
+        # ✅ Logout button for admin
         if st.button("Logout", key="logout_admin"):
             logout()
 
@@ -175,6 +175,9 @@ def app():
                 st.session_state.form_started = True
                 st.session_state.start_form_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 st.rerun()
+
+        if st.button("Logout", key="logout_start_page"):
+            logout()
 
         if st.session_state.form_started:
             st.title("Form Submission Page")
@@ -216,6 +219,9 @@ def app():
                     st.session_state.form_started = False
                     st.session_state.start_form_time = None
                     st.rerun()
+
+            if st.button("Logout", key="logout_form_page"):
+                logout()
 
 # Run the app
 if __name__ == "__main__":
