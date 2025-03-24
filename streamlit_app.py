@@ -70,6 +70,18 @@ def logout():
     st.session_state.start_form_time = None
     st.rerun()  # Force rerun to return to the login page
 
+# Function to load form data
+def load_form_data():
+    if os.path.exists(FORM_DATA_FILE):
+        with open(FORM_DATA_FILE, 'rb') as f:
+            return pickle.load(f)
+    return []
+
+# Function to save form data
+def save_form_data(form_data):
+    with open(FORM_DATA_FILE, 'wb') as f:
+        pickle.dump(form_data, f)
+
 # Main app function
 def app():
     if st.session_state.logged_in and st.session_state.username == "admin":
@@ -107,6 +119,25 @@ def app():
         # ✅ View Existing Users Section
         if st.button("View Existing Users"):
             st.write(load_user_data())
+
+        # ✅ View Submission Form Data Section
+        st.subheader("View Submission Forms Data")
+        form_data = load_form_data()
+
+        if form_data:
+            df = pd.DataFrame(form_data)
+            st.write(df)
+
+            # ✅ Download as CSV button
+            csv = df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Download CSV",
+                data=csv,
+                file_name="submission_data.csv",
+                mime="text/csv",
+            )
+        else:
+            st.info("No form data available.")
 
         # ✅ Logout button for admin
         if st.button("Logout", key="logout_admin"):
