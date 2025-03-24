@@ -1,12 +1,37 @@
 import streamlit as st
 import pandas as pd
 
+# Initialize session state variables
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+if 'username' not in st.session_state:
+    st.session_state.username = ""
+if 'user_data' not in st.session_state:
+    st.session_state.user_data = {}  # Store usernames and passwords
+if 'form_data' not in st.session_state:
+    st.session_state.form_data = []
+
 # Function to simulate login and capture the username
-def login(username):
-    # For simplicity, we're not checking passwords; just capturing the username.
-    # You could add password validation if needed.
-    st.session_state.logged_in = True
-    st.session_state.username = username
+def login(username, password):
+    # Check if username exists and password matches
+    if username in st.session_state.user_data and st.session_state.user_data[username] == password:
+        st.session_state.logged_in = True
+        st.session_state.username = username
+        return True
+    else:
+        return False
+
+# Function to simulate creating a new user
+def create_user(username, password):
+    # Add new user to the user_data session state (as an in-memory dictionary)
+    st.session_state.user_data[username] = password
+    st.success(f"User {username} created successfully!")
+
+# Function to logout the user
+def logout():
+    # Clear session state
+    st.session_state.logged_in = False
+    st.session_state.username = ""
 
 # Data for the form (Cohort, LOB, Sub-LOB)
 data = {
@@ -19,31 +44,37 @@ data = {
     }
 }
 
-# Initialize session state variables
-if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
-if 'username' not in st.session_state:
-    st.session_state.username = ""
-
-# Function to logout the user
-def logout():
-    # Clear session state
-    st.session_state.logged_in = False
-    st.session_state.username = ""
-
 # Streamlit app
 def app():
+    # Admin Page: Only accessible if logged in as an admin
+    if st.session_state.logged_in and st.session_state.username == "admin":
+        st.title("Admin Page")
+        st.subheader("Create New User")
+
+        new_username = st.text_input("Enter new username")
+        new_password = st.text_input("Enter new password", type="password")
+
+        if st.button("Create User"):
+            if new_username and new_password:
+                create_user(new_username, new_password)
+            else:
+                st.error("Please provide both a username and a password.")
+
+        # View existing users (for admin purposes)
+        if st.button("View Existing Users"):
+            st.write(st.session_state.user_data)
+
     # If the user is not logged in, show the login form
-    if not st.session_state.logged_in:
+    elif not st.session_state.logged_in:
         st.title("Login Page")
         username = st.text_input("Enter your Username:")
+        password = st.text_input("Enter your Password", type="password")
 
         if st.button("Login"):
-            if username:
-                login(username)
+            if login(username, password):
                 st.success(f"Welcome, {username}!")
             else:
-                st.error("Please enter a valid username.")
+                st.error("Invalid username or password.")
     
     # After login, show the form page
     else:
@@ -52,7 +83,6 @@ def app():
         
         if logout_button:
             logout()
-            # No need for experimental_rerun() here, as Streamlit will automatically re-render the page.
         
         st.title("Form Submission Page")
         st.write(f"Hello, {st.session_state.username}! Please fill in the form below.")
@@ -95,8 +125,6 @@ def app():
                 }
 
                 # Store the form entry
-                if 'form_data' not in st.session_state:
-                    st.session_state.form_data = []
                 st.session_state.form_data.append(form_entry)
 
                 # Reset the form after submission
