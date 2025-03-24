@@ -55,11 +55,6 @@ def app():
     # Dropdown 3 (Sub-LOB)
     sub_lob_options = data[cohort][lob]
     sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options)
-    
-    # Display selected options
-    st.write(f"You selected Cohort: {cohort}")
-    st.write(f"You selected LOB: {lob}")
-    st.write(f"You selected Sub-LOB: {sub_lob}")
 
 if __name__ == "__main__":
     app()
