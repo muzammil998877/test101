@@ -46,33 +46,25 @@ def save_form_data(form_data):
 
 # Function to simulate login and capture the username
 def login(username, password):
-    # Load user data from the pickle file
     user_data = load_user_data()
-
-    # Check if username exists and password matches
     if username in user_data and user_data[username] == password:
         st.session_state.logged_in = True
         st.session_state.username = username
         return True
-    else:
-        return False
+    return False
 
 # Function to simulate creating a new user
 def create_user(username, password):
-    # Load existing user data
     user_data = load_user_data()
-    
-    # Add new user to the user_data session state (as an in-memory dictionary)
     if username in user_data:
         st.error(f"User {username} already exists!")
     else:
         user_data[username] = password
-        save_user_data(user_data)  # Save updated user data to the pickle file
+        save_user_data(user_data)
         st.success(f"User {username} created successfully!")
 
 # Function to logout the user
 def logout():
-    # Clear session state
     st.session_state.logged_in = False
     st.session_state.username = ""
 
@@ -89,7 +81,6 @@ data = {
 
 # Streamlit app
 def app():
-    # Admin Page: Only accessible if logged in as an admin
     if st.session_state.logged_in and st.session_state.username == "admin":
         st.title("Admin Page")
         st.subheader("Create New User")
@@ -103,17 +94,12 @@ def app():
             else:
                 st.error("Please provide both a username and a password.")
 
-        # View existing users (for admin purposes)
         if st.button("View Existing Users"):
-            user_data = load_user_data()
-            st.write(user_data)
+            st.write(load_user_data())
 
-        # View form data (for admin purposes)
         if st.button("View Form Submissions"):
-            form_data = load_form_data()
-            st.write(form_data)
+            st.write(load_form_data())
 
-    # If the user is not logged in, show the login form
     elif not st.session_state.logged_in:
         st.title("Login Page")
         username = st.text_input("Enter your Username:")
@@ -124,49 +110,31 @@ def app():
                 st.success(f"Welcome, {username}!")
             else:
                 st.error("Invalid username or password.")
-    
-    # After login, show the form page
+
     else:
         if st.session_state.form_started:
-            # Display logout button on top-right
-            logout_button = st.button("Logout", key="logout_button", help="Click to logout")
-            
-            if logout_button:
+            if st.button("Logout", key="logout_button"):
                 logout()
 
             st.title("Form Submission Page")
             st.write(f"Hello, {st.session_state.username}! Please fill in the form below.")
-        
-            # Dropdown 1 (Cohort)
+
             cohort = st.selectbox("Select Cohort", options=[""] + list(data.keys()), index=0)
 
             if cohort:
-                # Dropdown 2 (LOB)
-                lob_options = list(data[cohort].keys())
-                lob = st.selectbox("Select LOB", options=[""] + lob_options, index=0)
-
+                lob = st.selectbox("Select LOB", options=[""] + list(data[cohort].keys()), index=0)
                 if lob:
-                    # Dropdown 3 (Sub-LOB)
-                    sub_lob_options = data[cohort][lob]
-                    sub_lob = st.selectbox("Select Sub-LOB", options=[""] + sub_lob_options, index=0)
+                    sub_lob = st.selectbox("Select Sub-LOB", options=[""] + data[cohort][lob], index=0)
 
-            # Additional Input Fields
             mpan = st.text_input("MPAN#", placeholder="Enter MPAN number")
             account = st.text_input("Account#", placeholder="Enter Account number")
             status = st.selectbox("Status", options=["", "Ongoing", "Completed"], index=0)
 
-            # Submit Button
-            submit_button = st.button("Submit")
-
-            # Handling form submission
-            if submit_button:
+            if st.button("Submit"):
                 if not cohort or not lob or not sub_lob or not mpan or not account or not status:
                     st.error("Please fill the form completely before submitting.")
                 else:
-                    # Capture the current date and time
                     submission_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-                    # Collect form data along with username and timestamp
                     form_entry = {
                         "Cohort": cohort,
                         "LOB": lob,
@@ -178,47 +146,26 @@ def app():
                         "Submission Time": submission_time
                     }
 
-                    # Store the form entry
                     st.session_state.form_data.append(form_entry)
-                    save_form_data(st.session_state.form_data)  # Save updated form data
+                    save_form_data(st.session_state.form_data)
 
-                    # Reset the form after submission
-                    st.session_state.cohort = ""
-                    st.session_state.lob = ""
-                    st.session_state.sub_lob = ""
-                    st.session_state.mpan = ""
-                    st.session_state.account = ""
-                    st.session_state.status = ""
-
+                    st.session_state.form_started = False
                     st.success("Form submitted successfully!")
 
-                    # Offer to download CSV with Submission Time
-                    if len(st.session_state.form_data) > 0:
-                        df = pd.DataFrame(st.session_state.form_data)
-                        csv = df.to_csv(index=False)
+                    df = pd.DataFrame(st.session_state.form_data)
+                    csv = df.to_csv(index=False)
 
-                        # Create a download link for the CSV
-                        st.download_button(
-                            label="Download CSV",
-                            data=csv,
-                            file_name="form_data_with_submission_time.csv",
-                            mime="text/csv"
-                        )
+                    st.download_button(
+                        label="Download CSV",
+                        data=csv,
+                        file_name="form_data_with_submission_time.csv",
+                        mime="text/csv"
+                    )
 
-                    # After submission, reset the form state and redirect to "Start Form"
-                    st.session_state.form_started = False
-                    st.experimental_rerun()
-
-        # "Start Form" button
+        # Fixed Start Form Button
         if not st.session_state.form_started:
-            start_form_button = st.button("Start Form")
-            if start_form_button:
+            if st.button("Start Form"):
                 st.session_state.form_started = True
-                st.experimental_rerun()  # Re-run the app to show the form
-        else:
-            # Show the form submission page if the user has clicked "Start Form"
-            st.title("Form Submission Page")
-            st.write(f"Hello, {st.session_state.username}! Please fill in the form below.")
 
 if __name__ == "__main__":
     app()
