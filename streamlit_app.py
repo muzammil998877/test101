@@ -79,15 +79,15 @@ def app():
     st.subheader("Additional Information")
 
     # Input Box for MPAN# with placeholder text
-    mpan = st.text_input("MPAN#", placeholder="Enter MPAN number")
+    mpan = st.text_input("MPAN#", placeholder="Enter MPAN number", value=st.session_state.mpan)
     st.session_state.mpan = mpan
 
     # Input Box for Account# with placeholder text
-    account = st.text_input("Account#", placeholder="Enter Account number")
+    account = st.text_input("Account#", placeholder="Enter Account number", value=st.session_state.account)
     st.session_state.account = account
 
     # Ongoing/Completed Dropdown
-    status = st.selectbox("Status", options=["", "Ongoing", "Completed"], index=0)
+    status = st.selectbox("Status", options=["", "Ongoing", "Completed"], index=0 if st.session_state.status == "" else ["", "Ongoing", "Completed"].index(st.session_state.status))
     st.session_state.status = status
 
     # Submit Button
@@ -105,6 +105,10 @@ def app():
             st.session_state.mpan = ""
             st.session_state.account = ""
             st.session_state.status = ""
+
+            # Clear the text input fields visually (this is the fix for clearing inputs)
+            st.text_input("MPAN#", placeholder="Enter MPAN number", value="")
+            st.text_input("Account#", placeholder="Enter Account number", value="")
 
             # Show success message after submission
             st.success("Form submitted successfully. Thank you!")
