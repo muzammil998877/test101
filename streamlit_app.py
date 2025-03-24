@@ -1,8 +1,15 @@
 import streamlit as st
 import pandas as pd
-import os
+import getpass  # To get the username
 
-# Data: Mapping Cohorts -> LOB -> Sub-LOB
+# Function to get the logged-in username (using getpass)
+def get_username():
+    try:
+        return getpass.getuser()
+    except Exception as e:
+        return "Unknown"  # Fallback if user name is not retrievable
+
+# Data: Mapping Cohorts -> LOB -> Sub-LOB (your data goes here)
 data = {
     'Exception Management': {
         'HHDC': [
@@ -46,14 +53,6 @@ data = {
 # Initialize session state for form data storage
 if 'form_data' not in st.session_state:
     st.session_state.form_data = []
-
-# Function to get the logged-in username
-def get_username():
-    try:
-        # This will fetch the username of the current user on the machine
-        return os.getlogin()
-    except Exception as e:
-        return f"Unknown ({e})"
 
 # Streamlit app
 def app():
@@ -112,10 +111,10 @@ def app():
         if not cohort or not lob or not sub_lob or not mpan or not account or not status:
             st.error("Please fill the form completely before submitting.")
         else:
-            # Get the logged-in username
-            username = get_username()
+            # Capture the username and add it to the form entry
+            username = get_username()  # Get the logged-in username
 
-            # Add the form data to session state, including the username
+            # Add the form data with username to session state
             form_entry = {
                 "Cohort": cohort,
                 "LOB": lob,
@@ -123,7 +122,7 @@ def app():
                 "MPAN": mpan,
                 "Account": account,
                 "Status": status,
-                "Submitted By": username  # Add username to the form data
+                "Username": username  # Add the username to the form data
             }
             st.session_state.form_data.append(form_entry)
 
@@ -148,7 +147,7 @@ def app():
                 st.download_button(
                     label="Download CSV",
                     data=csv,
-                    file_name="form_data.csv",
+                    file_name="form_data_with_username.csv",
                     mime="text/csv"
                 )
 
