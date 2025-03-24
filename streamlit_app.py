@@ -9,8 +9,9 @@ name_age_dict = {
     "Ali": [25, 26, 27]
 }
 
-# Create a list to hold form submissions
-form_data = []
+# Initialize form_data in session state if it doesn't exist
+if "form_data" not in st.session_state:
+    st.session_state.form_data = []
 
 # Title of the app
 st.title("User Information Form")
@@ -28,17 +29,17 @@ with st.form(key='user_form'):
 
     # When the user submits the form
     if submit_button:
-        # Store the form data in the list
-        form_data.append({"Name": name, "Age": age})
+        # Store the form data in session state
+        st.session_state.form_data.append({"Name": name, "Age": age})
         
         # Display the selected information
         st.write(f"Hello {name}! You selected age {age}.")
 
 # Export button to download form data as CSV
 if st.button("Export Data to CSV"):
-    if form_data:
+    if st.session_state.form_data:
         # Convert the list of form submissions into a DataFrame
-        df = pd.DataFrame(form_data)
+        df = pd.DataFrame(st.session_state.form_data)
 
         # Convert DataFrame to CSV
         csv = df.to_csv(index=False)
