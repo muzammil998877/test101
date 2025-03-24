@@ -1,6 +1,4 @@
 import streamlit as st
-import pandas as pd
-import io
 
 # Data: Mapping Cohorts -> LOB -> Sub-LOB
 data = {
@@ -43,75 +41,73 @@ data = {
     }
 }
 
-# Function to generate CSV from form data
-def generate_csv(data_dict):
-    # Convert the data dictionary to a pandas DataFrame
-    df = pd.DataFrame([data_dict])
-    # Create a buffer to hold the CSV data
-    csv_buffer = io.StringIO()
-    df.to_csv(csv_buffer, index=False)
-    csv_buffer.seek(0)
-    return csv_buffer
-
 # Streamlit app
 def app():
     st.title("Dependent Dropdowns Example")
 
-    # Dropdown 1 (Cohort)
-    cohort = st.selectbox("Select Cohort", options=list(data.keys()))
-    
-    # Dropdown 2 (LOB)
-    lob_options = list(data[cohort].keys())
-    lob = st.selectbox("Select LOB", options=lob_options)
+    # Initialize session state for multi-user form
+    if 'cohort' not in st.session_state:
+        st.session_state.cohort = ""
+    if 'lob' not in st.session_state:
+        st.session_state.lob = ""
+    if 'sub_lob' not in st.session_state:
+        st.session_state.sub_lob = ""
+    if 'mpan' not in st.session_state:
+        st.session_state.mpan = ""
+    if 'account' not in st.session_state:
+        st.session_state.account = ""
+    if 'status' not in st.session_state:
+        st.session_state.status = ""
 
-    # Dropdown 3 (Sub-LOB)
-    sub_lob_options = data[cohort][lob]
-    sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options)
+    # Dropdown 1 (Cohort)
+    cohort = st.selectbox("Select Cohort", options=[""] + list(data.keys()), index=0)
+    st.session_state.cohort = cohort
+
+    if cohort:
+        # Dropdown 2 (LOB)
+        lob_options = list(data[cohort].keys())
+        lob = st.selectbox("Select LOB", options=[""] + lob_options, index=0)
+        st.session_state.lob = lob
+
+        if lob:
+            # Dropdown 3 (Sub-LOB)
+            sub_lob_options = data[cohort][lob]
+            sub_lob = st.selectbox("Select Sub-LOB", options=[""] + sub_lob_options, index=0)
+            st.session_state.sub_lob = sub_lob
 
     # Add the input boxes at the bottom
     st.subheader("Additional Information")
 
     # Input Box for MPAN# with placeholder text
     mpan = st.text_input("MPAN#", placeholder="Enter MPAN number")
+    st.session_state.mpan = mpan
 
     # Input Box for Account# with placeholder text
     account = st.text_input("Account#", placeholder="Enter Account number")
+    st.session_state.account = account
 
     # Ongoing/Completed Dropdown
-    status = st.selectbox("Status", options=["Ongoing", "Completed"])
+    status = st.selectbox("Status", options=["", "Ongoing", "Completed"], index=0)
+    st.session_state.status = status
 
     # Submit Button
     submit_button = st.button("Submit")
 
-    # Show success message when submit button is clicked
+    # Validation before submit
     if submit_button:
-        # Validate if the form is filled
         if not cohort or not lob or not sub_lob or not mpan or not account or not status:
-            st.error("Please fill the form before submitting it!")
+            st.error("Please fill the form completely before submitting.")
         else:
-            # Form data collected into a dictionary
-            form_data = {
-                "Cohort": cohort,
-                "LOB": lob,
-                "Sub-LOB": sub_lob,
-                "MPAN#": mpan,
-                "Account#": account,
-                "Status": status
-            }
+            # Reset the form if submitted successfully
+            st.session_state.cohort = ""
+            st.session_state.lob = ""
+            st.session_state.sub_lob = ""
+            st.session_state.mpan = ""
+            st.session_state.account = ""
+            st.session_state.status = ""
 
-            # Display success message
-            st.success("You have successfully submitted the form. Thank you!")
-
-            # Generate CSV data
-            csv_file = generate_csv(form_data)
-
-            # Provide download button for CSV
-            st.download_button(
-                label="Download Form Data as CSV",
-                data=csv_file,
-                file_name="form_data.csv",
-                mime="text/csv"
-            )
+            # Show success message after submission
+            st.success("Form submitted successfully. Thank you!")
 
 if __name__ == "__main__":
     app()
