@@ -16,15 +16,18 @@ if 'form_data' not in st.session_state:
 # Function to simulate login and capture the username
 def login(username, password):
     # Debugging output
-    st.write(f"Attempting to login with username: {username} and password: {password}")
+    st.write(f"Attempting login with Username: {username} and Password: {password}")
 
     # Check if username exists and password matches
-    if username in st.session_state.user_data and st.session_state.user_data[username] == password:
-        st.session_state.logged_in = True
-        st.session_state.username = username
-        return True
-    else:
-        return False
+    if username in st.session_state.user_data:
+        stored_password = st.session_state.user_data[username]
+        st.write(f"Stored password for {username}: {stored_password}")
+        if stored_password == password:
+            st.session_state.logged_in = True
+            st.session_state.username = username
+            return True
+    st.write("Login failed: Invalid username or password")
+    return False
 
 # Function to simulate creating a new user
 def create_user(username, password):
@@ -51,7 +54,7 @@ data = {
 
 # Streamlit app
 def app():
-    # Debugging output
+    # Debugging output: Print session state
     st.write(f"Session state: {st.session_state}")
     
     # Admin Page: Only accessible if logged in as an admin
@@ -79,6 +82,8 @@ def app():
         password = st.text_input("Enter your Password", type="password")
 
         if st.button("Login"):
+            # Debugging: Show what username and password are being passed
+            st.write(f"Attempting to log in with username: {username} and password: {password}")
             if login(username, password):
                 st.success(f"Welcome, {username}!")
             else:
