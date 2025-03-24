@@ -1,13 +1,3 @@
-Sure! To add a **logout button** on the second page, you can simply add a button at the top-right of the page and, when clicked, reset the session state (i.e., logging the user out).
-
-Here’s how to integrate the **logout functionality**:
-
-1. **Add a logout button** in the form page.
-2. **On clicking the logout button**, clear the session state related to the login and redirect to the login page.
-
-### Here's the updated code with the logout button:
-
-```python
 import streamlit as st
 import pandas as pd
 
@@ -134,26 +124,3 @@ def app():
 
 if __name__ == "__main__":
     app()
-```
-
-### Explanation of Changes:
-1. **Logout Button**:
-   - The `logout()` function clears the session state (`st.session_state.logged_in` and `st.session_state.username`).
-   - The `st.button("Logout")` button is placed at the top right, and when clicked, it triggers the logout process and refreshes the page.
-
-2. **Logout Process**:
-   - When the user clicks on the **Logout** button, the session is cleared using `st.session_state.logged_in = False` and `st.session_state.username = ""`.
-   - `st.experimental_rerun()` is used to refresh the page, effectively taking the user back to the login page.
-
-3. **Form Page**:
-   - The form page remains the same. The user can fill out the form, and once submitted, the form data is saved in the session state.
-   - The CSV download is also available as before.
-
-### User Flow:
-1. The user enters the **Login Page**, inputs their username, and clicks **Login**.
-2. After logging in, the user sees the **Form Page** where they can fill out the form.
-3. If the user wishes to log out, they click the **Logout** button in the top-right corner. This will log them out and return to the login page.
-
-### Next Steps:
-- You can enhance this by adding more complex authentication mechanisms (such as password validation).
-- The **logout button** provides a smooth way to exit the application and ensure that the session data is cleared.
