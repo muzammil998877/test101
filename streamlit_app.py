@@ -49,11 +49,11 @@ def app():
     cohort = st.selectbox("Select Cohort", options=list(data.keys()))
     
     # Dropdown 2 (LOB)
-    lob_options = list(data[cohort].keys())
+    lob_options = list(data[cohort].keys()) if cohort else []
     lob = st.selectbox("Select LOB", options=lob_options)
 
     # Dropdown 3 (Sub-LOB)
-    sub_lob_options = data[cohort][lob]
+    sub_lob_options = data[cohort][lob] if cohort and lob else []
     sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options)
 
     # Add the input boxes at the bottom
@@ -71,21 +71,25 @@ def app():
     # Submit Button
     submit_button = st.button("Submit")
 
-    # Show success message when submit button is clicked
+    # Check if any field is empty before submitting
     if submit_button:
-        # Change the button color to green using custom styling
-        st.markdown("""
-            <style>
-            .stButton>button {
-                background-color: #4CAF50; 
-                color: white;
-                border: none;
-            }
-            </style>
-            """, unsafe_allow_html=True)
+        if not cohort or not lob or not sub_lob or not mpan or not account:
+            # Display error message if any field is empty
+            st.error("Please fill the form completely before submitting.")
+        else:
+            # Change the button color to green using custom styling
+            st.markdown("""
+                <style>
+                .stButton>button {
+                    background-color: #4CAF50; 
+                    color: white;
+                    border: none;
+                }
+                </style>
+                """, unsafe_allow_html=True)
 
-        # Display a success message (this simulates a popup-like behavior)
-        st.success("You have successfully submitted the form. Thank you!")
+            # Display a success message (this simulates a popup-like behavior)
+            st.success("You have successfully submitted the form. Thank you!")
 
 if __name__ == "__main__":
     app()
