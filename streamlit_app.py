@@ -152,12 +152,12 @@ def app():
 
                     # Redirect back to the Start Form page
                     st.session_state.form_started = False
-                    st.experimental_rerun()  # Auto-refresh the page
+                    st.rerun()  # ✅ Fix applied: This replaces the old `st.experimental_rerun()`
 
         if not st.session_state.form_started:
             if st.button("Start Form"):
                 st.session_state.form_started = True
-                st.experimental_rerun()  # Ensures the form appears immediately
+                st.rerun()  # ✅ Fix applied: This replaces the old `st.experimental_rerun()`
 
 if __name__ == "__main__":
     app()
