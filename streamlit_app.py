@@ -205,7 +205,7 @@ def app():
                             mime="text/csv"
                         )
 
-                    # After submission, redirect to "Start Form"
+                    # After submission, reset the form state and redirect to "Start Form"
                     st.session_state.form_started = False
                     st.experimental_rerun()
 
