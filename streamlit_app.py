@@ -52,16 +52,6 @@ def login(username, password):
         return True
     return False
 
-# Create User
-def create_user(username, password):
-    user_data = load_user_data()
-    if username in user_data:
-        st.error(f"User {username} already exists!")
-    else:
-        user_data[username] = password
-        save_user_data(user_data)
-        st.success(f"User {username} created successfully!")
-
 # Logout Function
 def logout():
     st.session_state.logged_in = False
@@ -146,6 +136,11 @@ def app():
                 st.session_state.form_started = True
                 st.rerun()
 
+        # ✅ Logout Button on Start Form Page (Before Form Starts)
+        st.write("")
+        if st.button("Logout"):
+            logout()
+
         # ✅ Form Submission Page
         if st.session_state.form_started:
             st.title("Form Submission Page")
@@ -198,7 +193,7 @@ def app():
                     st.session_state.start_form_time = None
                     st.rerun()
 
-            # ✅ Logout Button (Single Click)
+            # ✅ Logout Button on Form Page
             if st.button("Logout"):
                 logout()
 
