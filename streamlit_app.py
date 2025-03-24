@@ -1,4 +1,6 @@
 import streamlit as st
+import pandas as pd
+import io
 
 # Data: Mapping Cohorts -> LOB -> Sub-LOB
 data = {
@@ -40,6 +42,10 @@ data = {
         ]
     }
 }
+
+# Initialize session state for form data storage
+if 'form_data' not in st.session_state:
+    st.session_state.form_data = []
 
 # Streamlit app
 def app():
@@ -98,7 +104,18 @@ def app():
         if not cohort or not lob or not sub_lob or not mpan or not account or not status:
             st.error("Please fill the form completely before submitting.")
         else:
-            # Reset the form if submitted successfully
+            # Add the form data to session state
+            form_entry = {
+                "Cohort": cohort,
+                "LOB": lob,
+                "Sub-LOB": sub_lob,
+                "MPAN": mpan,
+                "Account": account,
+                "Status": status
+            }
+            st.session_state.form_data.append(form_entry)
+
+            # Reset the form after submission
             st.session_state.cohort = ""
             st.session_state.lob = ""
             st.session_state.sub_lob = ""
@@ -108,6 +125,20 @@ def app():
 
             # Show success message after submission
             st.success("Form submitted successfully. Thank you!")
+
+            # Offer to download the CSV file
+            if len(st.session_state.form_data) > 0:
+                df = pd.DataFrame(st.session_state.form_data)
+                # Convert the DataFrame to CSV
+                csv = df.to_csv(index=False)
+
+                # Create a download link for the CSV
+                st.download_button(
+                    label="Download CSV",
+                    data=csv,
+                    file_name="form_data.csv",
+                    mime="text/csv"
+                )
 
 if __name__ == "__main__":
     app()
