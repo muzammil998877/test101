@@ -4,11 +4,9 @@ import pickle
 import os
 from datetime import datetime
 
-# Define file to store user credentials and form data
 USER_DATA_FILE = 'user_data.pkl'
 FORM_DATA_FILE = 'form_data.pkl'
 
-# Initialize session state variables
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 if 'username' not in st.session_state:
@@ -16,22 +14,19 @@ if 'username' not in st.session_state:
 if 'form_data' not in st.session_state:
     st.session_state.form_data = []
 if 'form_started' not in st.session_state:
-    st.session_state.form_started = False  # Track if the user clicked "Start Form"
+    st.session_state.form_started = False
 
-# Function to load user data from the pickle file
 def load_user_data():
     if os.path.exists(USER_DATA_FILE):
         with open(USER_DATA_FILE, 'rb') as f:
             return pickle.load(f)
     else:
-        return {"admin": "admin123"}  # Default admin credentials
+        return {"admin": "admin123"}
 
-# Function to save user data to the pickle file
 def save_user_data(user_data):
     with open(USER_DATA_FILE, 'wb') as f:
         pickle.dump(user_data, f)
 
-# Function to load form data from the pickle file
 def load_form_data():
     if os.path.exists(FORM_DATA_FILE):
         with open(FORM_DATA_FILE, 'rb') as f:
@@ -39,12 +34,10 @@ def load_form_data():
     else:
         return []
 
-# Function to save form data to the pickle file
 def save_form_data(form_data):
     with open(FORM_DATA_FILE, 'wb') as f:
         pickle.dump(form_data, f)
 
-# Function to simulate login and capture the username
 def login(username, password):
     user_data = load_user_data()
     if username in user_data and user_data[username] == password:
@@ -53,7 +46,6 @@ def login(username, password):
         return True
     return False
 
-# Function to simulate creating a new user
 def create_user(username, password):
     user_data = load_user_data()
     if username in user_data:
@@ -63,12 +55,10 @@ def create_user(username, password):
         save_user_data(user_data)
         st.success(f"User {username} created successfully!")
 
-# Function to logout the user
 def logout():
     st.session_state.logged_in = False
     st.session_state.username = ""
 
-# Data for the form (Cohort, LOB, Sub-LOB)
 data = {
     'Exception Management': {
         'HHDC': ['A Flag - No', 'A Flag - Yes'],
@@ -79,7 +69,6 @@ data = {
     }
 }
 
-# Streamlit app
 def app():
     if st.session_state.logged_in and st.session_state.username == "admin":
         st.title("Admin Page")
@@ -149,7 +138,6 @@ def app():
                     st.session_state.form_data.append(form_entry)
                     save_form_data(st.session_state.form_data)
 
-                    st.session_state.form_started = False
                     st.success("Form submitted successfully!")
 
                     df = pd.DataFrame(st.session_state.form_data)
@@ -162,10 +150,14 @@ def app():
                         mime="text/csv"
                     )
 
-        # Fixed Start Form Button
+                    # Redirect back to the Start Form page
+                    st.session_state.form_started = False
+                    st.experimental_rerun()  # Auto-refresh the page
+
         if not st.session_state.form_started:
             if st.button("Start Form"):
                 st.session_state.form_started = True
+                st.experimental_rerun()  # Ensures the form appears immediately
 
 if __name__ == "__main__":
     app()
