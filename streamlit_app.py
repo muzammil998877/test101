@@ -55,7 +55,7 @@ def app():
         st.session_state.lob = ""
         st.session_state.sub_lob = ""
 
-    # Clear form if already submitted
+    # Reset the form after submission
     if st.session_state.form_submitted:
         st.session_state.mpan = ""
         st.session_state.account = ""
@@ -63,6 +63,7 @@ def app():
         st.session_state.lob = ""
         st.session_state.sub_lob = ""
         st.session_state.form_submitted = False
+        st.experimental_rerun()  # Force a reset of the app after form submission
 
     # Dropdown 1 (Cohort)
     cohort = st.selectbox("Select Cohort", options=list(data.keys()), key="cohort")
@@ -123,10 +124,6 @@ def app():
             st.session_state.cohort = cohort
             st.session_state.lob = lob
             st.session_state.sub_lob = sub_lob
-
-    # Reset the dropdowns and textboxes after form submission
-    if st.session_state.form_submitted:
-        st.experimental_rerun()
 
 if __name__ == "__main__":
     app()
