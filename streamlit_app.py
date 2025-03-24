@@ -55,11 +55,6 @@ def create_user(username, password):
         save_user_data(user_data)
         st.success(f"User {username} created successfully!")
 
-def logout():
-    st.session_state.logged_in = False
-    st.session_state.username = ""
-    st.experimental_rerun()  # ✅ Forces an immediate rerun to reflect logout status
-
 data = {
     'Exception Management': {
         'HHDC': ['A Flag - No', 'A Flag - Yes'],
@@ -87,15 +82,12 @@ def app():
         if st.button("View Existing Users"):
             st.write(load_user_data())
 
-        # ✅ NEW: View Form Submissions in a Table Format & Download CSV
         st.subheader("View Form Submissions")
-
         form_data = load_form_data()
         if form_data:
             df = pd.DataFrame(form_data)
-            st.dataframe(df)  # Display the form data in a table format
+            st.dataframe(df)
 
-            # Allow admin to download form submissions as CSV
             csv = df.to_csv(index=False).encode('utf-8')
             st.download_button(
                 label="Download Form Submissions as CSV",
@@ -114,18 +106,28 @@ def app():
         if st.button("Login"):
             if login(username, password):
                 st.success(f"Welcome, {username}!")
+                st.rerun()  # ✅ Ensures page refresh to show landing page
             else:
                 st.error("Invalid username or password.")
 
     else:
+        # ✅ Shows "Start Form" first after login instead of going directly to the form
+        st.title("Welcome")
+        st.write(f"Hello, {st.session_state.username}! Click below to start the form.")
+
+        # ✅ Fixed Logout Button (No double click issue)
+        if st.button("Logout"):
+            st.session_state.logged_in = False
+            st.session_state.username = ""
+            st.rerun()  # ✅ Refreshes the app immediately
+
+        if not st.session_state.form_started:
+            if st.button("Start Form"):
+                st.session_state.form_started = True
+                st.rerun()
+
         if st.session_state.form_started:
             st.title("Form Submission Page")
-            st.write(f"Hello, {st.session_state.username}! Please fill in the form below.")
-
-            # ✅ Fixed Logout Button: No need to click twice
-            if st.button("Logout", key="logout_button"):
-                logout()
-
             cohort = st.selectbox("Select Cohort", options=[""] + list(data.keys()), index=0)
 
             if cohort:
@@ -170,11 +172,6 @@ def app():
 
                     st.session_state.form_started = False
                     st.rerun()
-
-        if not st.session_state.form_started:
-            if st.button("Start Form"):
-                st.session_state.form_started = True
-                st.rerun()
 
 if __name__ == "__main__":
     app()
