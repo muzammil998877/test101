@@ -45,16 +45,23 @@ data = {
 def app():
     st.title("Dependent Dropdowns Example")
 
-    # Dropdown 1 (Cohort)
-    cohort = st.selectbox("Select Cohort", options=list(data.keys()))
-    
-    # Dropdown 2 (LOB)
-    lob_options = list(data[cohort].keys())
-    lob = st.selectbox("Select LOB", options=lob_options)
+    # Dropdown 1 (Cohort) with blank option as first item
+    cohort = st.selectbox("Select Cohort", options=[""] + list(data.keys()), index=0)
 
-    # Dropdown 3 (Sub-LOB)
-    sub_lob_options = data[cohort][lob]
-    sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options)
+    # Dropdown 2 (LOB) with blank option as first item
+    if cohort:
+        lob_options = [""] + list(data[cohort].keys())  # Add blank option to LOB
+        lob = st.selectbox("Select LOB", options=lob_options, index=0)
+
+        # Dropdown 3 (Sub-LOB) with blank option as first item
+        if lob:
+            sub_lob_options = [""] + data[cohort][lob]  # Add blank option to Sub-LOB
+            sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options, index=0)
+        else:
+            sub_lob = ""
+    else:
+        lob = ""
+        sub_lob = ""
 
     # Add the input boxes at the bottom
     st.subheader("Additional Information")
@@ -73,19 +80,26 @@ def app():
 
     # Show success message when submit button is clicked
     if submit_button:
-        # Change the button color to green using custom styling
-        st.markdown("""
-            <style>
-            .stButton>button {
-                background-color: #4CAF50; 
-                color: white;
-                border: none;
-            }
-            </style>
-            """, unsafe_allow_html=True)
+        # Check if all fields are filled
+        if cohort and lob and sub_lob and mpan and account:
+            # Change the button color to green using custom styling
+            st.markdown("""
+                <style>
+                .stButton>button {
+                    background-color: #4CAF50; 
+                    color: white;
+                    border: none;
+                }
+                </style>
+                """, unsafe_allow_html=True)
 
-        # Display a success message (this simulates a popup-like behavior)
-        st.success("You have successfully submitted the form. Thank you!")
+            # Display a success message
+            st.success("You have successfully submitted the form. Thank you!")
+
+            # Reset form fields (for next submit)
+            st.experimental_rerun()
+        else:
+            st.error("Please fill the form completely.")
 
 if __name__ == "__main__":
     app()
