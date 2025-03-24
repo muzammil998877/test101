@@ -19,31 +19,22 @@ if 'form_started' not in st.session_state:
     st.session_state.form_started = False
 if 'start_form_time' not in st.session_state:
     st.session_state.start_form_time = None
+if 'form_completed' not in st.session_state:
+    st.session_state.form_completed = False
 
 # Function to load user data
 def load_user_data():
     if os.path.exists(USER_DATA_FILE):
         with open(USER_DATA_FILE, 'rb') as f:
             return pickle.load(f)
-    else:
-        return {"admin": "admin123"}
+    return {"admin": "admin123"}
 
 # Function to save user data
 def save_user_data(user_data):
     with open(USER_DATA_FILE, 'wb') as f:
         pickle.dump(user_data, f)
 
-# Function to delete a user
-def delete_user(username):
-    user_data = load_user_data()
-    if username in user_data:
-        del user_data[username]  # Remove the user
-        save_user_data(user_data)  # Save updated data
-        st.success(f"User '{username}' has been deleted successfully.")
-    else:
-        st.error("User not found.")
-
-# Function to log in a user
+# Function to log in
 def login(username, password):
     user_data = load_user_data()
     if username in user_data and user_data[username] == password:
@@ -52,23 +43,14 @@ def login(username, password):
         return True
     return False
 
-# Function to create a new user
-def create_user(username, password):
-    user_data = load_user_data()
-    if username in user_data:
-        st.error(f"User {username} already exists!")
-    else:
-        user_data[username] = password
-        save_user_data(user_data)
-        st.success(f"User {username} created successfully!")
-
 # Function to log out
 def logout():
     st.session_state.logged_in = False
     st.session_state.username = ""
     st.session_state.form_started = False
     st.session_state.start_form_time = None
-    st.rerun()  # Force rerun to return to the login page
+    st.session_state.form_completed = False
+    st.rerun()
 
 # Function to load form data
 def load_form_data():
@@ -88,39 +70,7 @@ def app():
         # ✅ Admin Page
         st.title("Admin Page")
         
-        # ✅ Create New User Section
-        st.subheader("Create New User")
-        new_username = st.text_input("Enter new username")
-        new_password = st.text_input("Enter new password", type="password")
-        
-        if st.button("Create User"):
-            if new_username and new_password:
-                create_user(new_username, new_password)
-            else:
-                st.error("Please provide both a username and a password.")
-
-        # ✅ Delete User Section
-        st.subheader("Delete a User")
-        user_data = load_user_data()
-        users_list = list(user_data.keys())
-
-        if "admin" in users_list:
-            users_list.remove("admin")  # Prevent deleting admin
-
-        if users_list:
-            selected_user = st.selectbox("Select a user to delete", users_list)
-
-            if st.button("Delete User"):
-                delete_user(selected_user)
-                st.rerun()  # Refresh the page after deletion
-        else:
-            st.info("No users available to delete.")
-
-        # ✅ View Existing Users Section
-        if st.button("View Existing Users"):
-            st.write(load_user_data())
-
-        # ✅ View Submission Form Data Section
+        # ✅ View Submission Forms Data
         st.subheader("View Submission Forms Data")
         form_data = load_form_data()
 
@@ -128,7 +78,7 @@ def app():
             df = pd.DataFrame(form_data)
             st.write(df)
 
-            # ✅ Download as CSV button
+            # ✅ Download CSV button
             csv = df.to_csv(index=False).encode('utf-8')
             st.download_button(
                 label="Download CSV",
@@ -139,7 +89,7 @@ def app():
         else:
             st.info("No form data available.")
 
-        # ✅ Logout button for admin
+        # ✅ Logout button
         if st.button("Logout", key="logout_admin"):
             logout()
 
@@ -161,10 +111,37 @@ def app():
         st.title("Start Form Page")
         st.write(f"Hello, {st.session_state.username}! Click below to start the form.")
 
-        if st.button("Start Form"):
-            st.session_state.form_started = True
-            st.session_state.start_form_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Capture Start Form Time
-            st.rerun()
+        if not st.session_state.form_started:
+            if st.button("Start Form"):
+                st.session_state.form_started = True
+                st.session_state.start_form_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                st.rerun()
+
+        elif not st.session_state.form_completed:
+            st.subheader("Form Section")
+
+            question1 = st.text_input("Enter your response to Question 1:")
+            question2 = st.text_input("Enter your response to Question 2:")
+
+            if st.button("Submit Form"):
+                form_entry = {
+                    "Username": st.session_state.username,
+                    "Start Time": st.session_state.start_form_time,
+                    "End Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "Question 1": question1,
+                    "Question 2": question2,
+                }
+
+                form_data = load_form_data()
+                form_data.append(form_entry)
+                save_form_data(form_data)
+
+                st.session_state.form_completed = True
+                st.success("Form submitted successfully!")
+                st.rerun()
+
+        else:
+            st.write("✅ You have already completed the form. Thank you!")
 
         # ✅ Logout button on Start Form Page
         if st.button("Logout", key="logout_start_page"):
