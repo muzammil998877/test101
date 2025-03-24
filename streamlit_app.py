@@ -62,7 +62,6 @@ def logout():
     # Clear session state
     st.session_state.logged_in = False
     st.session_state.username = ""
-    st.experimental_rerun()  # Immediately rerun to update the page after logout
 
 # Data for the form (Cohort, LOB, Sub-LOB)
 data = {
@@ -110,7 +109,6 @@ def app():
             st.write(f"Attempting to log in with username: {username} and password: {password}")
             if login(username, password):
                 st.success(f"Welcome, {username}!")
-                st.experimental_rerun()  # Immediately rerun to update the page after login
             else:
                 st.error("Invalid username or password.")
     
