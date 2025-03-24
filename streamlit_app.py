@@ -45,23 +45,23 @@ data = {
 def app():
     st.title("Dependent Dropdowns Example")
 
-    # Dropdown 1 (Cohort) with blank option as first item
-    cohort = st.selectbox("Select Cohort", options=[""] + list(data.keys()), index=0)
+    # Dropdown 1 (Cohort) - No selection by default
+    cohort = st.selectbox("Select Cohort", options=[None] + list(data.keys()), index=0)
 
-    # Dropdown 2 (LOB) with blank option as first item
+    # Dropdown 2 (LOB) - Dependent on Cohort
     if cohort:
-        lob_options = [""] + list(data[cohort].keys())  # Add blank option to LOB
+        lob_options = [None] + list(data[cohort].keys())  # Add None for no selection
         lob = st.selectbox("Select LOB", options=lob_options, index=0)
 
-        # Dropdown 3 (Sub-LOB) with blank option as first item
+        # Dropdown 3 (Sub-LOB) - Dependent on LOB
         if lob:
-            sub_lob_options = [""] + data[cohort][lob]  # Add blank option to Sub-LOB
+            sub_lob_options = [None] + data[cohort][lob]  # Add None for no selection
             sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options, index=0)
         else:
-            sub_lob = ""
+            sub_lob = None
     else:
-        lob = ""
-        sub_lob = ""
+        lob = None
+        sub_lob = None
 
     # Add the input boxes at the bottom
     st.subheader("Additional Information")
