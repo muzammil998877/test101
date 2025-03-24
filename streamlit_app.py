@@ -52,6 +52,7 @@ def app():
         
         if logout_button:
             logout()
+            # Simply clear the session state without rerunning the app
             st.experimental_rerun()  # Refresh the page to go back to login
         
         st.title("Form Submission Page")
