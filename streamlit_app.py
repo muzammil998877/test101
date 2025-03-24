@@ -124,5 +124,9 @@ def app():
             st.session_state.lob = lob
             st.session_state.sub_lob = sub_lob
 
+    # Reset the dropdowns and textboxes after form submission
+    if st.session_state.form_submitted:
+        st.experimental_rerun()
+
 if __name__ == "__main__":
     app()
