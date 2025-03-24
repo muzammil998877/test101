@@ -45,86 +45,47 @@ data = {
 def app():
     st.title("Dependent Dropdowns Example")
 
-    # Initialize session state variables if they don't exist
-    if 'cohort' not in st.session_state:
-        st.session_state.cohort = None
-    if 'lob' not in st.session_state:
-        st.session_state.lob = None
-    if 'sub_lob' not in st.session_state:
-        st.session_state.sub_lob = None
-    if 'mpan' not in st.session_state:
-        st.session_state.mpan = ""
-    if 'account' not in st.session_state:
-        st.session_state.account = ""
-    if 'status' not in st.session_state:
-        st.session_state.status = "Ongoing"
+    # Dropdown 1 (Cohort)
+    cohort = st.selectbox("Select Cohort", options=list(data.keys()))
+    
+    # Dropdown 2 (LOB)
+    lob_options = list(data[cohort].keys())
+    lob = st.selectbox("Select LOB", options=lob_options)
 
-    # Dropdown 1 (Cohort) - No selection by default
-    cohort = st.selectbox("Select Cohort", options=[None] + list(data.keys()), index=0 if st.session_state.cohort is None else list(data.keys()).index(st.session_state.cohort))
-    st.session_state.cohort = cohort
-
-    # Dropdown 2 (LOB) - Dependent on Cohort
-    if cohort:
-        lob_options = [None] + list(data[cohort].keys())  # Add None for no selection
-        lob = st.selectbox("Select LOB", options=lob_options, index=0 if st.session_state.lob is None else lob_options.index(st.session_state.lob))
-        st.session_state.lob = lob
-
-        # Dropdown 3 (Sub-LOB) - Dependent on LOB
-        if lob:
-            sub_lob_options = [None] + data[cohort][lob]  # Add None for no selection
-            sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options, index=0 if st.session_state.sub_lob is None else sub_lob_options.index(st.session_state.sub_lob))
-            st.session_state.sub_lob = sub_lob
-        else:
-            st.session_state.sub_lob = None
-    else:
-        st.session_state.lob = None
-        st.session_state.sub_lob = None
+    # Dropdown 3 (Sub-LOB)
+    sub_lob_options = data[cohort][lob]
+    sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options)
 
     # Add the input boxes at the bottom
     st.subheader("Additional Information")
 
     # Input Box for MPAN# with placeholder text
-    mpan = st.text_input("MPAN#", value=st.session_state.mpan, placeholder="Enter MPAN number")
-    st.session_state.mpan = mpan
+    mpan = st.text_input("MPAN#", placeholder="Enter MPAN number")
 
     # Input Box for Account# with placeholder text
-    account = st.text_input("Account#", value=st.session_state.account, placeholder="Enter Account number")
-    st.session_state.account = account
+    account = st.text_input("Account#", placeholder="Enter Account number")
 
     # Ongoing/Completed Dropdown
-    status = st.selectbox("Status", options=["Ongoing", "Completed"], index=0 if st.session_state.status == "Ongoing" else 1)
-    st.session_state.status = status
+    status = st.selectbox("Status", options=["Ongoing", "Completed"])
 
     # Submit Button
     submit_button = st.button("Submit")
 
     # Show success message when submit button is clicked
     if submit_button:
-        # Check if all fields are filled
-        if cohort and lob and sub_lob and mpan and account:
-            # Change the button color to green using custom styling
-            st.markdown("""
-                <style>
-                .stButton>button {
-                    background-color: #4CAF50; 
-                    color: white;
-                    border: none;
-                }
-                </style>
-                """, unsafe_allow_html=True)
+        # Change the button color to green using custom styling
+        st.markdown("""
+            <style>
+            .stButton>button {
+                background-color: #4CAF50; 
+                color: white;
+                border: none;
+            }
+            </style>
+            """, unsafe_allow_html=True)
 
-            # Display a success message
-            st.success("You have successfully submitted the form. Thank you!")
-
-            # Reset form fields (by clearing session state)
-            st.session_state.cohort = None
-            st.session_state.lob = None
-            st.session_state.sub_lob = None
-            st.session_state.mpan = ""
-            st.session_state.account = ""
-            st.session_state.status = "Ongoing"
-        else:
-            st.error("Please fill the form completely.")
+        # Display a success message (this simulates a popup-like behavior)
+        st.success("You have successfully submitted the form. Thank you!")
 
 if __name__ == "__main__":
     app()
