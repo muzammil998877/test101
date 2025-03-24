@@ -66,21 +66,21 @@ def app():
         st.experimental_rerun()  # Force a reset of the app after form submission
 
     # Dropdown 1 (Cohort)
-    cohort = st.selectbox("Select Cohort", options=list(data.keys()), key="cohort")
+    cohort = st.selectbox("Select Cohort", options=[""] + list(data.keys()), key="cohort")
 
-    # If Cohort is selected, populate LOB dropdown
-    if cohort:
-        lob_options = list(data[cohort].keys())
+    # Dropdown 2 (LOB)
+    if cohort:  # Only show LOB if cohort is selected
+        lob_options = [""] + list(data[cohort].keys())
         lob = st.selectbox("Select LOB", options=lob_options, key="lob")
     else:
-        lob = ""
+        lob = ""  # Reset LOB to blank if no cohort selected
 
-    # If LOB is selected, populate Sub-LOB dropdown
-    if lob:
-        sub_lob_options = data[cohort][lob]
+    # Dropdown 3 (Sub-LOB)
+    if lob:  # Only show Sub-LOB if LOB is selected
+        sub_lob_options = [""] + data[cohort][lob]
         sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options, key="sub_lob")
     else:
-        sub_lob = ""
+        sub_lob = ""  # Reset Sub-LOB to blank if no LOB selected
 
     # Add the input boxes at the bottom
     st.subheader("Additional Information")
