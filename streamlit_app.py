@@ -100,6 +100,4 @@ def app():
             st.experimental_rerun()
         else:
             st.error("Please fill the form completely.")
-
-if __name__ == "__main__":
     app()
