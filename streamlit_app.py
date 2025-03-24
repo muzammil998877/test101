@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import pickle
 import os
+from datetime import datetime
 
 # Define file to store user credentials and form data
 USER_DATA_FILE = 'user_data.pkl'
@@ -60,7 +61,7 @@ def login(username, password):
 def create_user(username, password):
     # Load existing user data
     user_data = load_user_data()
-
+    
     # Add new user to the user_data session state (as an in-memory dictionary)
     if username in user_data:
         st.error(f"User {username} already exists!")
@@ -107,23 +108,10 @@ def app():
             user_data = load_user_data()
             st.write(user_data)
 
-        # View all form submissions (for admin purposes)
-        if st.button("View All Submissions"):
+        # View form data (for admin purposes)
+        if st.button("View Form Submissions"):
             form_data = load_form_data()
-            if form_data:
-                df = pd.DataFrame(form_data)
-                st.write(df)
-
-                # Offer to download CSV for admin
-                csv = df.to_csv(index=False)
-                st.download_button(
-                    label="Download CSV",
-                    data=csv,
-                    file_name="all_form_submissions.csv",
-                    mime="text/csv"
-                )
-            else:
-                st.write("No submissions available.")
+            st.write(form_data)
 
     # If the user is not logged in, show the login form
     elif not st.session_state.logged_in:
@@ -134,30 +122,21 @@ def app():
         if st.button("Login"):
             if login(username, password):
                 st.success(f"Welcome, {username}!")
-                st.experimental_rerun()  # Immediately rerun to update the page after login
             else:
                 st.error("Invalid username or password.")
     
-    # After login, show the form page for regular users
+    # After login, show the form page
     else:
-        # Display logout button on top-right
-        logout_button = st.button("Logout", key="logout_button", help="Click to logout")
-        
-        if logout_button:
-            logout()
-        
-        st.title("Form Submission Page")
-        st.write(f"Hello, {st.session_state.username}! Please fill in the form below.")
-
-        # Add a button to "Start Form"
-        if not st.session_state.form_started:
-            start_button = st.button("Start Form")
-            if start_button:
-                st.session_state.form_started = True
-                st.experimental_rerun()  # Refresh the page after clicking "Start Form"
-        
-        # Once the form has started, show the form options
         if st.session_state.form_started:
+            # Display logout button on top-right
+            logout_button = st.button("Logout", key="logout_button", help="Click to logout")
+            
+            if logout_button:
+                logout()
+
+            st.title("Form Submission Page")
+            st.write(f"Hello, {st.session_state.username}! Please fill in the form below.")
+        
             # Dropdown 1 (Cohort)
             cohort = st.selectbox("Select Cohort", options=[""] + list(data.keys()), index=0)
 
@@ -184,7 +163,10 @@ def app():
                 if not cohort or not lob or not sub_lob or not mpan or not account or not status:
                     st.error("Please fill the form completely before submitting.")
                 else:
-                    # Collect form data along with username
+                    # Capture the current date and time
+                    submission_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                    # Collect form data along with username and timestamp
                     form_entry = {
                         "Cohort": cohort,
                         "LOB": lob,
@@ -192,12 +174,13 @@ def app():
                         "MPAN": mpan,
                         "Account": account,
                         "Status": status,
-                        "Username": st.session_state.username
+                        "Username": st.session_state.username,
+                        "Submission Time": submission_time
                     }
 
                     # Store the form entry
                     st.session_state.form_data.append(form_entry)
-                    save_form_data(st.session_state.form_data)  # Save form data to file
+                    save_form_data(st.session_state.form_data)  # Save updated form data
 
                     # Reset the form after submission
                     st.session_state.cohort = ""
@@ -209,18 +192,29 @@ def app():
 
                     st.success("Form submitted successfully!")
 
-                    # Offer to download CSV for the user (only their submissions)
+                    # Offer to download CSV with Submission Time
                     if len(st.session_state.form_data) > 0:
                         df = pd.DataFrame(st.session_state.form_data)
                         csv = df.to_csv(index=False)
 
                         # Create a download link for the CSV
                         st.download_button(
-                            label="Download Your Submissions",
+                            label="Download CSV",
                             data=csv,
-                            file_name=f"{st.session_state.username}_form_data.csv",
+                            file_name="form_data_with_submission_time.csv",
                             mime="text/csv"
                         )
+        
+        # "Start Form" button
+        if not st.session_state.form_started:
+            start_form_button = st.button("Start Form")
+            if start_form_button:
+                st.session_state.form_started = True
+                st.experimental_rerun()  # Re-run the app to show the form
+        else:
+            # Show the form submission page if the user has clicked "Start Form"
+            st.title("Form Submission Page")
+            st.write(f"Hello, {st.session_state.username}! Please fill in the form below.")
 
 if __name__ == "__main__":
     app()
