@@ -7,7 +7,9 @@ if 'logged_in' not in st.session_state:
 if 'username' not in st.session_state:
     st.session_state.username = ""
 if 'user_data' not in st.session_state:
-    st.session_state.user_data = {}  # Store usernames and passwords
+    st.session_state.user_data = {
+        "admin": "admin123"  # Predefined admin credentials
+    }
 if 'form_data' not in st.session_state:
     st.session_state.form_data = []
 
