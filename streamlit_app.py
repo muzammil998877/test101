@@ -1,39 +1,61 @@
 import streamlit as st
 import pandas as pd
+import pickle
+import os
+
+# Define file to store user credentials
+USER_DATA_FILE = 'user_data.pkl'
 
 # Initialize session state variables
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 if 'username' not in st.session_state:
     st.session_state.username = ""
-if 'user_data' not in st.session_state:
-    st.session_state.user_data = {
-        "admin": "admin123"  # Predefined admin credentials
-    }
 if 'form_data' not in st.session_state:
     st.session_state.form_data = []
+
+# Function to load user data from the pickle file
+def load_user_data():
+    if os.path.exists(USER_DATA_FILE):
+        with open(USER_DATA_FILE, 'rb') as f:
+            return pickle.load(f)
+    else:
+        return {"admin": "admin123"}  # Default admin credentials
+
+# Function to save user data to the pickle file
+def save_user_data(user_data):
+    with open(USER_DATA_FILE, 'wb') as f:
+        pickle.dump(user_data, f)
 
 # Function to simulate login and capture the username
 def login(username, password):
     # Debugging output
     st.write(f"Attempting login with Username: {username} and Password: {password}")
 
+    # Load user data from the pickle file
+    user_data = load_user_data()
+
     # Check if username exists and password matches
-    if username in st.session_state.user_data:
-        stored_password = st.session_state.user_data[username]
-        st.write(f"Stored password for {username}: {stored_password}")
-        if stored_password == password:
-            st.session_state.logged_in = True
-            st.session_state.username = username
-            return True
-    st.write("Login failed: Invalid username or password")
-    return False
+    if username in user_data and user_data[username] == password:
+        st.session_state.logged_in = True
+        st.session_state.username = username
+        return True
+    else:
+        st.write("Login failed: Invalid username or password")
+        return False
 
 # Function to simulate creating a new user
 def create_user(username, password):
+    # Load existing user data
+    user_data = load_user_data()
+    
     # Add new user to the user_data session state (as an in-memory dictionary)
-    st.session_state.user_data[username] = password
-    st.success(f"User {username} created successfully!")
+    if username in user_data:
+        st.error(f"User {username} already exists!")
+    else:
+        user_data[username] = password
+        save_user_data(user_data)  # Save updated user data to the pickle file
+        st.success(f"User {username} created successfully!")
 
 # Function to logout the user
 def logout():
@@ -73,7 +95,8 @@ def app():
 
         # View existing users (for admin purposes)
         if st.button("View Existing Users"):
-            st.write(st.session_state.user_data)
+            user_data = load_user_data()
+            st.write(user_data)
 
     # If the user is not logged in, show the login form
     elif not st.session_state.logged_in:
