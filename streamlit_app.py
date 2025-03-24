@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-import io
+import os
+import socket  # To capture the machine's name
 
 # Data: Mapping Cohorts -> LOB -> Sub-LOB
 data = {
@@ -46,6 +47,13 @@ data = {
 # Initialize session state for form data storage
 if 'form_data' not in st.session_state:
     st.session_state.form_data = []
+
+# Get the system's hostname
+def get_user_info():
+    try:
+        return socket.gethostname()  # Machine name
+    except Exception as e:
+        return f"Unknown ({e})"
 
 # Streamlit app
 def app():
@@ -104,6 +112,9 @@ def app():
         if not cohort or not lob or not sub_lob or not mpan or not account or not status:
             st.error("Please fill the form completely before submitting.")
         else:
+            # Get the user's system name or username
+            user_info = get_user_info()
+
             # Add the form data to session state
             form_entry = {
                 "Cohort": cohort,
@@ -111,7 +122,8 @@ def app():
                 "Sub-LOB": sub_lob,
                 "MPAN": mpan,
                 "Account": account,
-                "Status": status
+                "Status": status,
+                "Submitted By": user_info  # Add the system/username column
             }
             st.session_state.form_data.append(form_entry)
 
