@@ -166,9 +166,6 @@ def app():
                     # Capture the current date and time
                     submission_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                    # Capture "Start Form" status
-                    start_form_status = True if st.session_state.form_started else False
-
                     # Collect form data along with username and timestamp
                     form_entry = {
                         "Cohort": cohort,
@@ -178,8 +175,7 @@ def app():
                         "Account": account,
                         "Status": status,
                         "Username": st.session_state.username,
-                        "Submission Time": submission_time,
-                        "Start Form": start_form_status  # Add Start Form column
+                        "Submission Time": submission_time
                     }
 
                     # Store the form entry
@@ -196,7 +192,7 @@ def app():
 
                     st.success("Form submitted successfully!")
 
-                    # Offer to download CSV with Submission Time and Start Form columns
+                    # Offer to download CSV with Submission Time
                     if len(st.session_state.form_data) > 0:
                         df = pd.DataFrame(st.session_state.form_data)
                         csv = df.to_csv(index=False)
@@ -205,10 +201,14 @@ def app():
                         st.download_button(
                             label="Download CSV",
                             data=csv,
-                            file_name="form_data_with_submission_time_and_start_form.csv",
+                            file_name="form_data_with_submission_time.csv",
                             mime="text/csv"
                         )
-        
+
+                    # After submission, redirect to "Start Form"
+                    st.session_state.form_started = False
+                    st.experimental_rerun()
+
         # "Start Form" button
         if not st.session_state.form_started:
             start_form_button = st.button("Start Form")
