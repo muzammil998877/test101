@@ -86,8 +86,24 @@ def app():
         if st.button("View Existing Users"):
             st.write(load_user_data())
 
-        if st.button("View Form Submissions"):
-            st.write(load_form_data())
+        # ✅ NEW: View Form Submissions in a Table Format & Download CSV
+        st.subheader("View Form Submissions")
+
+        form_data = load_form_data()
+        if form_data:
+            df = pd.DataFrame(form_data)
+            st.dataframe(df)  # Display the form data in a table format
+
+            # Allow admin to download form submissions as CSV
+            csv = df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Download Form Submissions as CSV",
+                data=csv,
+                file_name="form_submissions.csv",
+                mime="text/csv"
+            )
+        else:
+            st.info("No form submissions available.")
 
     elif not st.session_state.logged_in:
         st.title("Login Page")
@@ -150,14 +166,13 @@ def app():
                         mime="text/csv"
                     )
 
-                    # Redirect back to the Start Form page
                     st.session_state.form_started = False
-                    st.rerun()  # ✅ Fix applied: This replaces the old `st.experimental_rerun()`
+                    st.rerun()
 
         if not st.session_state.form_started:
             if st.button("Start Form"):
                 st.session_state.form_started = True
-                st.rerun()  # ✅ Fix applied: This replaces the old `st.experimental_rerun()`
+                st.rerun()
 
 if __name__ == "__main__":
     app()
