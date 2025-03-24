@@ -22,7 +22,9 @@ with st.form(key='user_form'):
     name = st.selectbox("Select your name:", list(name_age_dict.keys()))
     
     # Second dropdown for Age (dependent on the selected name)
-    age = st.selectbox("Select your age:", name_age_dict[name])
+    # Set the default age based on the selected name
+    default_age = name_age_dict[name][0]  # Set the first age as the default value
+    age = st.selectbox("Select your age:", name_age_dict[name], index=name_age_dict[name].index(default_age))
 
     # Submit button
     submit_button = st.form_submit_button(label='Submit')
