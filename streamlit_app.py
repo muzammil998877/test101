@@ -52,8 +52,7 @@ def app():
         
         if logout_button:
             logout()
-            # Simply clear the session state without rerunning the app
-            st.experimental_rerun()  # Refresh the page to go back to login
+            # No need for experimental_rerun() here, as Streamlit will automatically re-render the page.
         
         st.title("Form Submission Page")
         st.write(f"Hello, {st.session_state.username}! Please fill in the form below.")
