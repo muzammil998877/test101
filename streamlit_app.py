@@ -3,8 +3,9 @@ import pandas as pd
 import pickle
 import os
 
-# Define file to store user credentials
+# Define file to store user credentials and form data
 USER_DATA_FILE = 'user_data.pkl'
+FORM_DATA_FILE = 'form_data.pkl'
 
 # Initialize session state variables
 if 'logged_in' not in st.session_state:
@@ -27,11 +28,21 @@ def save_user_data(user_data):
     with open(USER_DATA_FILE, 'wb') as f:
         pickle.dump(user_data, f)
 
+# Function to load form data from the pickle file
+def load_form_data():
+    if os.path.exists(FORM_DATA_FILE):
+        with open(FORM_DATA_FILE, 'rb') as f:
+            return pickle.load(f)
+    else:
+        return []
+
+# Function to save form data to the pickle file
+def save_form_data(form_data):
+    with open(FORM_DATA_FILE, 'wb') as f:
+        pickle.dump(form_data, f)
+
 # Function to simulate login and capture the username
 def login(username, password):
-    # Debugging output
-    st.write(f"Attempting login with Username: {username} and Password: {password}")
-
     # Load user data from the pickle file
     user_data = load_user_data()
 
@@ -41,14 +52,13 @@ def login(username, password):
         st.session_state.username = username
         return True
     else:
-        st.write("Login failed: Invalid username or password")
         return False
 
 # Function to simulate creating a new user
 def create_user(username, password):
     # Load existing user data
     user_data = load_user_data()
-    
+
     # Add new user to the user_data session state (as an in-memory dictionary)
     if username in user_data:
         st.error(f"User {username} already exists!")
@@ -76,9 +86,6 @@ data = {
 
 # Streamlit app
 def app():
-    # Debugging output: Print session state
-    st.write(f"Session state: {st.session_state}")
-    
     # Admin Page: Only accessible if logged in as an admin
     if st.session_state.logged_in and st.session_state.username == "admin":
         st.title("Admin Page")
@@ -98,6 +105,24 @@ def app():
             user_data = load_user_data()
             st.write(user_data)
 
+        # View all form submissions (for admin purposes)
+        if st.button("View All Submissions"):
+            form_data = load_form_data()
+            if form_data:
+                df = pd.DataFrame(form_data)
+                st.write(df)
+
+                # Offer to download CSV for admin
+                csv = df.to_csv(index=False)
+                st.download_button(
+                    label="Download CSV",
+                    data=csv,
+                    file_name="all_form_submissions.csv",
+                    mime="text/csv"
+                )
+            else:
+                st.write("No submissions available.")
+
     # If the user is not logged in, show the login form
     elif not st.session_state.logged_in:
         st.title("Login Page")
@@ -105,14 +130,13 @@ def app():
         password = st.text_input("Enter your Password", type="password")
 
         if st.button("Login"):
-            # Debugging: Show what username and password are being passed
-            st.write(f"Attempting to log in with username: {username} and password: {password}")
             if login(username, password):
                 st.success(f"Welcome, {username}!")
+                st.experimental_rerun()  # Immediately rerun to update the page after login
             else:
                 st.error("Invalid username or password.")
     
-    # After login, show the form page
+    # After login, show the form page for regular users
     else:
         # Display logout button on top-right
         logout_button = st.button("Logout", key="logout_button", help="Click to logout")
@@ -162,6 +186,7 @@ def app():
 
                 # Store the form entry
                 st.session_state.form_data.append(form_entry)
+                save_form_data(st.session_state.form_data)  # Save form data to file
 
                 # Reset the form after submission
                 st.session_state.cohort = ""
@@ -173,16 +198,16 @@ def app():
 
                 st.success("Form submitted successfully!")
 
-                # Offer to download CSV
+                # Offer to download CSV for the user (only their submissions)
                 if len(st.session_state.form_data) > 0:
                     df = pd.DataFrame(st.session_state.form_data)
                     csv = df.to_csv(index=False)
 
                     # Create a download link for the CSV
                     st.download_button(
-                        label="Download CSV",
+                        label="Download Your Submissions",
                         data=csv,
-                        file_name="form_data_with_username.csv",
+                        file_name=f"{st.session_state.username}_form_data.csv",
                         mime="text/csv"
                     )
 
