@@ -15,6 +15,9 @@ if 'form_data' not in st.session_state:
 
 # Function to simulate login and capture the username
 def login(username, password):
+    # Debugging output
+    st.write(f"Attempting to login with username: {username} and password: {password}")
+
     # Check if username exists and password matches
     if username in st.session_state.user_data and st.session_state.user_data[username] == password:
         st.session_state.logged_in = True
@@ -48,6 +51,9 @@ data = {
 
 # Streamlit app
 def app():
+    # Debugging output
+    st.write(f"Session state: {st.session_state}")
+    
     # Admin Page: Only accessible if logged in as an admin
     if st.session_state.logged_in and st.session_state.username == "admin":
         st.title("Admin Page")
