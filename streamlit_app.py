@@ -43,27 +43,46 @@ data = {
 
 # Streamlit app
 def app():
+    # Title of the app
     st.title("Dependent Dropdowns Example")
 
+    # Add session state to handle resetting the form
+    if "form_submitted" not in st.session_state:
+        st.session_state.form_submitted = False
+        st.session_state.mpan = ""
+        st.session_state.account = ""
+        st.session_state.cohort = ""
+        st.session_state.lob = ""
+        st.session_state.sub_lob = ""
+
+    if st.session_state.form_submitted:
+        # Reset the form values
+        st.session_state.mpan = ""
+        st.session_state.account = ""
+        st.session_state.cohort = ""
+        st.session_state.lob = ""
+        st.session_state.sub_lob = ""
+        st.session_state.form_submitted = False
+
     # Dropdown 1 (Cohort)
-    cohort = st.selectbox("Select Cohort", options=list(data.keys()))
+    cohort = st.selectbox("Select Cohort", options=list(data.keys()), key="cohort")
     
     # Dropdown 2 (LOB)
-    lob_options = list(data[cohort].keys())
-    lob = st.selectbox("Select LOB", options=lob_options)
-
+    lob_options = list(data[cohort].keys()) if cohort else []
+    lob = st.selectbox("Select LOB", options=lob_options, key="lob")
+    
     # Dropdown 3 (Sub-LOB)
-    sub_lob_options = data[cohort][lob]
-    sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options)
+    sub_lob_options = data[cohort][lob] if lob else []
+    sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options, key="sub_lob")
 
     # Add the input boxes at the bottom
     st.subheader("Additional Information")
 
     # Input Box for MPAN# with placeholder text
-    mpan = st.text_input("MPAN#", placeholder="Enter MPAN number")
-
+    mpan = st.text_input("MPAN#", placeholder="Enter MPAN number", value=st.session_state.mpan)
+    
     # Input Box for Account# with placeholder text
-    account = st.text_input("Account#", placeholder="Enter Account number")
+    account = st.text_input("Account#", placeholder="Enter Account number", value=st.session_state.account)
 
     # Ongoing/Completed Dropdown
     status = st.selectbox("Status", options=["Ongoing", "Completed"])
@@ -73,19 +92,31 @@ def app():
 
     # Show success message when submit button is clicked
     if submit_button:
-        # Change the button color to green using custom styling
-        st.markdown("""
-            <style>
-            .stButton>button {
-                background-color: #4CAF50; 
-                color: white;
-                border: none;
-            }
-            </style>
-            """, unsafe_allow_html=True)
+        # Validation: Ensure all fields are filled
+        if not mpan or not account or not cohort or not lob or not sub_lob:
+            st.error("Please fill in all the fields to complete the form.")
+        else:
+            # Change the button color to green using custom styling
+            st.markdown("""
+                <style>
+                .stButton>button {
+                    background-color: #4CAF50; 
+                    color: white;
+                    border: none;
+                }
+                </style>
+                """, unsafe_allow_html=True)
 
-        # Display a success message (this simulates a popup-like behavior)
-        st.success("You have successfully submitted the form. Thank you!")
+            # Display a success message (this simulates a popup-like behavior)
+            st.success("You have successfully submitted the form. Thank you!")
+
+            # Store the values in session state to keep track of the submission
+            st.session_state.form_submitted = True
+            st.session_state.mpan = mpan
+            st.session_state.account = account
+            st.session_state.cohort = cohort
+            st.session_state.lob = lob
+            st.session_state.sub_lob = sub_lob
 
 if __name__ == "__main__":
     app()
