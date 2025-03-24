@@ -59,15 +59,11 @@ def app():
     # Add the input boxes at the bottom
     st.subheader("Additional Information")
 
-    # Input Box for MPAN#
-    mpan = st.text_input("MPAN#", "Enter MPAN number")
+    # Input Box for MPAN# with placeholder text
+    mpan = st.text_input("MPAN#", placeholder="Enter MPAN number")
 
-    # Input Box for Account#
-    account = st.text_input("Account#", "Enter Account number")
-
-    # Display the values (optional, you can comment this out if you don't want to display them)
-    # st.write(f"MPAN#: {mpan}")
-    # st.write(f"Account#: {account}")
+    # Input Box for Account# with placeholder text
+    account = st.text_input("Account#", placeholder="Enter Account number")
 
 if __name__ == "__main__":
     app()
