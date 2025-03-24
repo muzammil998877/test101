@@ -45,35 +45,55 @@ data = {
 def app():
     st.title("Dependent Dropdowns Example")
 
+    # Initialize session state variables if they don't exist
+    if 'cohort' not in st.session_state:
+        st.session_state.cohort = None
+    if 'lob' not in st.session_state:
+        st.session_state.lob = None
+    if 'sub_lob' not in st.session_state:
+        st.session_state.sub_lob = None
+    if 'mpan' not in st.session_state:
+        st.session_state.mpan = ""
+    if 'account' not in st.session_state:
+        st.session_state.account = ""
+    if 'status' not in st.session_state:
+        st.session_state.status = "Ongoing"
+
     # Dropdown 1 (Cohort) - No selection by default
-    cohort = st.selectbox("Select Cohort", options=[None] + list(data.keys()), index=0)
+    cohort = st.selectbox("Select Cohort", options=[None] + list(data.keys()), index=0 if st.session_state.cohort is None else list(data.keys()).index(st.session_state.cohort))
+    st.session_state.cohort = cohort
 
     # Dropdown 2 (LOB) - Dependent on Cohort
     if cohort:
         lob_options = [None] + list(data[cohort].keys())  # Add None for no selection
-        lob = st.selectbox("Select LOB", options=lob_options, index=0)
+        lob = st.selectbox("Select LOB", options=lob_options, index=0 if st.session_state.lob is None else lob_options.index(st.session_state.lob))
+        st.session_state.lob = lob
 
         # Dropdown 3 (Sub-LOB) - Dependent on LOB
         if lob:
             sub_lob_options = [None] + data[cohort][lob]  # Add None for no selection
-            sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options, index=0)
+            sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options, index=0 if st.session_state.sub_lob is None else sub_lob_options.index(st.session_state.sub_lob))
+            st.session_state.sub_lob = sub_lob
         else:
-            sub_lob = None
+            st.session_state.sub_lob = None
     else:
-        lob = None
-        sub_lob = None
+        st.session_state.lob = None
+        st.session_state.sub_lob = None
 
     # Add the input boxes at the bottom
     st.subheader("Additional Information")
 
     # Input Box for MPAN# with placeholder text
-    mpan = st.text_input("MPAN#", placeholder="Enter MPAN number")
+    mpan = st.text_input("MPAN#", value=st.session_state.mpan, placeholder="Enter MPAN number")
+    st.session_state.mpan = mpan
 
     # Input Box for Account# with placeholder text
-    account = st.text_input("Account#", placeholder="Enter Account number")
+    account = st.text_input("Account#", value=st.session_state.account, placeholder="Enter Account number")
+    st.session_state.account = account
 
     # Ongoing/Completed Dropdown
-    status = st.selectbox("Status", options=["Ongoing", "Completed"])
+    status = st.selectbox("Status", options=["Ongoing", "Completed"], index=0 if st.session_state.status == "Ongoing" else 1)
+    st.session_state.status = status
 
     # Submit Button
     submit_button = st.button("Submit")
@@ -96,8 +116,13 @@ def app():
             # Display a success message
             st.success("You have successfully submitted the form. Thank you!")
 
-            # Reset form fields (for next submit)
-            st.experimental_rerun()
+            # Reset form fields (by clearing session state)
+            st.session_state.cohort = None
+            st.session_state.lob = None
+            st.session_state.sub_lob = None
+            st.session_state.mpan = ""
+            st.session_state.account = ""
+            st.session_state.status = "Ongoing"
         else:
             st.error("Please fill the form completely.")
 
