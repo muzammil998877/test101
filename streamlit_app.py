@@ -98,7 +98,7 @@ def app():
         if not cohort or not lob or not sub_lob or not mpan or not account or not status:
             st.error("Please fill the form completely before submitting.")
         else:
-            # Reset the form if submitted successfully
+            # Reset session state variables for form fields
             st.session_state.cohort = ""
             st.session_state.lob = ""
             st.session_state.sub_lob = ""
@@ -106,9 +106,8 @@ def app():
             st.session_state.account = ""
             st.session_state.status = ""
 
-            # Clear the text input fields visually (this is the fix for clearing inputs)
-            st.text_input("MPAN#", placeholder="Enter MPAN number", value="")
-            st.text_input("Account#", placeholder="Enter Account number", value="")
+            # Refresh the page to reset the form visually
+            st.experimental_rerun()
 
             # Show success message after submission
             st.success("Form submitted successfully. Thank you!")
