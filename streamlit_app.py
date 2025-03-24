@@ -15,6 +15,8 @@ if 'form_data' not in st.session_state:
     st.session_state.form_data = []
 if 'form_started' not in st.session_state:
     st.session_state.form_started = False
+if 'start_time' not in st.session_state:
+    st.session_state.start_time = None  # Track start form time
 
 def load_user_data():
     if os.path.exists(USER_DATA_FILE):
@@ -86,13 +88,13 @@ def app():
         if st.button("View Existing Users"):
             st.write(load_user_data())
 
-        # ✅ NEW: View Form Submissions in a Table Format & Download CSV
+        # ✅ NEW: View Form Submissions with Start Form Time
         st.subheader("View Form Submissions")
 
         form_data = load_form_data()
         if form_data:
             df = pd.DataFrame(form_data)
-            st.dataframe(df)  # Display the form data in a table format
+            st.dataframe(df)  # Display table with Start Form Time column
 
             # Allow admin to download form submissions as CSV
             csv = df.to_csv(index=False).encode('utf-8')
@@ -148,6 +150,7 @@ def app():
                         "Account": account,
                         "Status": status,
                         "Username": st.session_state.username,
+                        "Start Form Time": st.session_state.start_time,  # New column
                         "Submission Time": submission_time
                     }
 
@@ -172,6 +175,7 @@ def app():
         if not st.session_state.form_started:
             if st.button("Start Form"):
                 st.session_state.form_started = True
+                st.session_state.start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Capture Start Time
                 st.rerun()
 
 if __name__ == "__main__":
