@@ -15,8 +15,6 @@ if 'form_data' not in st.session_state:
     st.session_state.form_data = []
 if 'form_started' not in st.session_state:
     st.session_state.form_started = False
-if 'start_time' not in st.session_state:
-    st.session_state.start_time = None  # Track start form time
 
 def load_user_data():
     if os.path.exists(USER_DATA_FILE):
@@ -60,6 +58,7 @@ def create_user(username, password):
 def logout():
     st.session_state.logged_in = False
     st.session_state.username = ""
+    st.experimental_rerun()  # ✅ Forces an immediate rerun to reflect logout status
 
 data = {
     'Exception Management': {
@@ -88,13 +87,13 @@ def app():
         if st.button("View Existing Users"):
             st.write(load_user_data())
 
-        # ✅ NEW: View Form Submissions with Start Form Time
+        # ✅ NEW: View Form Submissions in a Table Format & Download CSV
         st.subheader("View Form Submissions")
 
         form_data = load_form_data()
         if form_data:
             df = pd.DataFrame(form_data)
-            st.dataframe(df)  # Display table with Start Form Time column
+            st.dataframe(df)  # Display the form data in a table format
 
             # Allow admin to download form submissions as CSV
             csv = df.to_csv(index=False).encode('utf-8')
@@ -120,11 +119,12 @@ def app():
 
     else:
         if st.session_state.form_started:
-            if st.button("Logout", key="logout_button"):
-                logout()
-
             st.title("Form Submission Page")
             st.write(f"Hello, {st.session_state.username}! Please fill in the form below.")
+
+            # ✅ Fixed Logout Button: No need to click twice
+            if st.button("Logout", key="logout_button"):
+                logout()
 
             cohort = st.selectbox("Select Cohort", options=[""] + list(data.keys()), index=0)
 
@@ -150,7 +150,6 @@ def app():
                         "Account": account,
                         "Status": status,
                         "Username": st.session_state.username,
-                        "Start Form Time": st.session_state.start_time,  # New column
                         "Submission Time": submission_time
                     }
 
@@ -175,7 +174,6 @@ def app():
         if not st.session_state.form_started:
             if st.button("Start Form"):
                 st.session_state.form_started = True
-                st.session_state.start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Capture Start Time
                 st.rerun()
 
 if __name__ == "__main__":
