@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import io
+import os
 
 # Data: Mapping Cohorts -> LOB -> Sub-LOB
 data = {
@@ -46,6 +46,14 @@ data = {
 # Initialize session state for form data storage
 if 'form_data' not in st.session_state:
     st.session_state.form_data = []
+
+# Function to get the logged-in username
+def get_username():
+    try:
+        # This will fetch the username of the current user on the machine
+        return os.getlogin()
+    except Exception as e:
+        return f"Unknown ({e})"
 
 # Streamlit app
 def app():
@@ -104,14 +112,18 @@ def app():
         if not cohort or not lob or not sub_lob or not mpan or not account or not status:
             st.error("Please fill the form completely before submitting.")
         else:
-            # Add the form data to session state
+            # Get the logged-in username
+            username = get_username()
+
+            # Add the form data to session state, including the username
             form_entry = {
                 "Cohort": cohort,
                 "LOB": lob,
                 "Sub-LOB": sub_lob,
                 "MPAN": mpan,
                 "Account": account,
-                "Status": status
+                "Status": status,
+                "Submitted By": username  # Add username to the form data
             }
             st.session_state.form_data.append(form_entry)
 
