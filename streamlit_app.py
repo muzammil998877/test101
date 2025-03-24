@@ -65,13 +65,27 @@ def create_user(username, password):
         save_user_data(user_data)
         st.success(f"User {username} created successfully!")
 
+# Function to delete a user
+def delete_user(username):
+    user_data = load_user_data()
+    if username in user_data:
+        if username == "admin":
+            st.error("Cannot delete the admin account!")
+        else:
+            del user_data[username]
+            save_user_data(user_data)
+            st.success(f"User {username} deleted successfully!")
+            st.rerun()
+    else:
+        st.error("User not found!")
+
 # Function to log out
 def logout():
     st.session_state.logged_in = False
     st.session_state.username = ""
     st.session_state.form_started = False
     st.session_state.start_form_time = None
-    st.rerun()  # Force rerun to return to the login page
+    st.rerun()
 
 # Sample data structure for form options
 data = {
@@ -100,8 +114,20 @@ def app():
             else:
                 st.error("Please provide both a username and a password.")
 
-        if st.button("View Existing Users"):
-            st.write(load_user_data())
+        # ✅ View & Delete Users Feature
+        st.subheader("Manage Users")
+
+        user_data = load_user_data()
+        if user_data:
+            st.write("### Existing Users:")
+            for user in user_data.keys():
+                if user != "admin":  # Prevent admin deletion
+                    col1, col2 = st.columns([3, 1])
+                    col1.write(user)
+                    if col2.button(f"Delete {user}", key=f"delete_{user}"):
+                        delete_user(user)
+        else:
+            st.info("No users available.")
 
         # ✅ View Form Submissions in a Table Format & Download CSV
         st.subheader("View Form Submissions")
@@ -109,7 +135,7 @@ def app():
         form_data = load_form_data()
         if form_data:
             df = pd.DataFrame(form_data)
-            st.dataframe(df)  # Display the form data in a table format
+            st.dataframe(df)
 
             # Allow admin to download form submissions as CSV
             csv = df.to_csv(index=False).encode('utf-8')
@@ -144,18 +170,15 @@ def app():
         st.title("Start Form Page")
         st.write(f"Hello, {st.session_state.username}! Click below to start the form.")
 
-        # ✅ "Start Form" button appears only if form hasn't started
         if not st.session_state.form_started:
             if st.button("Start Form"):
                 st.session_state.form_started = True
-                st.session_state.start_form_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Capture Start Form Time
+                st.session_state.start_form_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 st.rerun()
 
-        # ✅ Logout button on Start Form Page
         if st.button("Logout", key="logout_start_page"):
             logout()
 
-        # ✅ Form Submission Page (Only displayed if form is started)
         if st.session_state.form_started:
             st.title("Form Submission Page")
             st.write(f"Hello, {st.session_state.username}! Please fill in the form below.")
@@ -184,7 +207,7 @@ def app():
                         "Account": account,
                         "Status": status,
                         "Username": st.session_state.username,
-                        "Start Form Time": st.session_state.start_form_time,  # ✅ Save Start Form Time
+                        "Start Form Time": st.session_state.start_form_time,
                         "Submission Time": submission_time
                     }
 
@@ -193,21 +216,10 @@ def app():
 
                     st.success("Form submitted successfully!")
 
-                    df = pd.DataFrame(st.session_state.form_data)
-                    csv = df.to_csv(index=False).encode('utf-8')
-
-                    st.download_button(
-                        label="Download CSV",
-                        data=csv,
-                        file_name="form_data_with_times.csv",
-                        mime="text/csv"
-                    )
-
                     st.session_state.form_started = False
                     st.session_state.start_form_time = None
                     st.rerun()
 
-            # ✅ Logout button inside the form
             if st.button("Logout", key="logout_form_page"):
                 logout()
 
