@@ -55,8 +55,8 @@ def app():
         st.session_state.lob = ""
         st.session_state.sub_lob = ""
 
+    # Clear form if already submitted
     if st.session_state.form_submitted:
-        # Reset the form values
         st.session_state.mpan = ""
         st.session_state.account = ""
         st.session_state.cohort = ""
@@ -66,21 +66,27 @@ def app():
 
     # Dropdown 1 (Cohort)
     cohort = st.selectbox("Select Cohort", options=list(data.keys()), key="cohort")
-    
-    # Dropdown 2 (LOB)
-    lob_options = list(data[cohort].keys()) if cohort else []
-    lob = st.selectbox("Select LOB", options=lob_options, key="lob")
-    
-    # Dropdown 3 (Sub-LOB)
-    sub_lob_options = data[cohort][lob] if lob else []
-    sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options, key="sub_lob")
+
+    # If Cohort is selected, populate LOB dropdown
+    if cohort:
+        lob_options = list(data[cohort].keys())
+        lob = st.selectbox("Select LOB", options=lob_options, key="lob")
+    else:
+        lob = ""
+
+    # If LOB is selected, populate Sub-LOB dropdown
+    if lob:
+        sub_lob_options = data[cohort][lob]
+        sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options, key="sub_lob")
+    else:
+        sub_lob = ""
 
     # Add the input boxes at the bottom
     st.subheader("Additional Information")
 
     # Input Box for MPAN# with placeholder text
     mpan = st.text_input("MPAN#", placeholder="Enter MPAN number", value=st.session_state.mpan)
-    
+
     # Input Box for Account# with placeholder text
     account = st.text_input("Account#", placeholder="Enter Account number", value=st.session_state.account)
 
