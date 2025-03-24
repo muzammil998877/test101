@@ -33,18 +33,15 @@ def save_user_data(user_data):
     with open(USER_DATA_FILE, 'wb') as f:
         pickle.dump(user_data, f)
 
-# Function to load form data
-def load_form_data():
-    if os.path.exists(FORM_DATA_FILE):
-        with open(FORM_DATA_FILE, 'rb') as f:
-            return pickle.load(f)
+# Function to delete a user
+def delete_user(username):
+    user_data = load_user_data()
+    if username in user_data:
+        del user_data[username]  # Remove the user
+        save_user_data(user_data)  # Save updated data
+        st.success(f"User '{username}' has been deleted successfully.")
     else:
-        return []
-
-# Function to save form data
-def save_form_data(form_data):
-    with open(FORM_DATA_FILE, 'wb') as f:
-        pickle.dump(form_data, f)
+        st.error("User not found.")
 
 # Function to log in a user
 def login(username, password):
@@ -73,61 +70,50 @@ def logout():
     st.session_state.start_form_time = None
     st.rerun()  # Force rerun to return to the login page
 
-# Sample data structure for form options
-data = {
-    'Exception Management': {
-        'HHDC': ['A Flag - No', 'A Flag - Yes'],
-        'NHHDC': ['Received D0002s - Daily: NHH Faults']
-    },
-    'Metering': {
-        'Meter Serv BW': ['Aborts - SMETS Install', 'D0002: HH']
-    }
-}
-
 # Main app function
 def app():
     if st.session_state.logged_in and st.session_state.username == "admin":
-        # Admin Page
+        # ✅ Admin Page
         st.title("Admin Page")
+        
+        # ✅ Create New User Section
         st.subheader("Create New User")
-
         new_username = st.text_input("Enter new username")
         new_password = st.text_input("Enter new password", type="password")
-
+        
         if st.button("Create User"):
             if new_username and new_password:
                 create_user(new_username, new_password)
             else:
                 st.error("Please provide both a username and a password.")
 
+        # ✅ Delete User Section
+        st.subheader("Delete a User")
+        user_data = load_user_data()
+        users_list = list(user_data.keys())
+
+        if "admin" in users_list:
+            users_list.remove("admin")  # Prevent deleting admin
+
+        if users_list:
+            selected_user = st.selectbox("Select a user to delete", users_list)
+
+            if st.button("Delete User"):
+                delete_user(selected_user)
+                st.rerun()  # Refresh the page after deletion
+        else:
+            st.info("No users available to delete.")
+
+        # ✅ View Existing Users Section
         if st.button("View Existing Users"):
             st.write(load_user_data())
-
-        # ✅ View Form Submissions in a Table Format & Download CSV
-        st.subheader("View Form Submissions")
-
-        form_data = load_form_data()
-        if form_data:
-            df = pd.DataFrame(form_data)
-            st.dataframe(df)  # Display the form data in a table format
-
-            # Allow admin to download form submissions as CSV
-            csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="Download Form Submissions as CSV",
-                data=csv,
-                file_name="form_submissions.csv",
-                mime="text/csv"
-            )
-        else:
-            st.info("No form submissions available.")
 
         # ✅ Logout button for admin
         if st.button("Logout", key="logout_admin"):
             logout()
 
     elif not st.session_state.logged_in:
-        # Login Page
+        # ✅ Login Page
         st.title("Login Page")
         username = st.text_input("Enter your Username:")
         password = st.text_input("Enter your Password", type="password")
@@ -140,7 +126,7 @@ def app():
                 st.error("Invalid username or password.")
 
     else:
-        # ✅ Start Form Page (Landing Page)
+        # ✅ Start Form Page
         st.title("Start Form Page")
         st.write(f"Hello, {st.session_state.username}! Click below to start the form.")
 
@@ -152,62 +138,6 @@ def app():
         # ✅ Logout button on Start Form Page
         if st.button("Logout", key="logout_start_page"):
             logout()
-
-        # ✅ Form Submission Page
-        if st.session_state.form_started:
-            st.title("Form Submission Page")
-            st.write(f"Hello, {st.session_state.username}! Please fill in the form below.")
-
-            cohort = st.selectbox("Select Cohort", options=[""] + list(data.keys()), index=0)
-
-            if cohort:
-                lob = st.selectbox("Select LOB", options=[""] + list(data[cohort].keys()), index=0)
-                if lob:
-                    sub_lob = st.selectbox("Select Sub-LOB", options=[""] + data[cohort][lob], index=0)
-
-            mpan = st.text_input("MPAN#", placeholder="Enter MPAN number")
-            account = st.text_input("Account#", placeholder="Enter Account number")
-            status = st.selectbox("Status", options=["", "Ongoing", "Completed"], index=0)
-
-            if st.button("Submit"):
-                if not cohort or not lob or not sub_lob or not mpan or not account or not status:
-                    st.error("Please fill the form completely before submitting.")
-                else:
-                    submission_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    form_entry = {
-                        "Cohort": cohort,
-                        "LOB": lob,
-                        "Sub-LOB": sub_lob,
-                        "MPAN": mpan,
-                        "Account": account,
-                        "Status": status,
-                        "Username": st.session_state.username,
-                        "Start Form Time": st.session_state.start_form_time,  # ✅ Save Start Form Time
-                        "Submission Time": submission_time
-                    }
-
-                    st.session_state.form_data.append(form_entry)
-                    save_form_data(st.session_state.form_data)
-
-                    st.success("Form submitted successfully!")
-
-                    df = pd.DataFrame(st.session_state.form_data)
-                    csv = df.to_csv(index=False).encode('utf-8')
-
-                    st.download_button(
-                        label="Download CSV",
-                        data=csv,
-                        file_name="form_data_with_times.csv",
-                        mime="text/csv"
-                    )
-
-                    st.session_state.form_started = False
-                    st.session_state.start_form_time = None
-                    st.rerun()
-
-            # ✅ Logout button inside the form
-            if st.button("Logout", key="logout_form_page"):
-                logout()
 
 # Run the app
 if __name__ == "__main__":
