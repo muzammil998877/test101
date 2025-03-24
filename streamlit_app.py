@@ -144,16 +144,18 @@ def app():
         st.title("Start Form Page")
         st.write(f"Hello, {st.session_state.username}! Click below to start the form.")
 
-        if st.button("Start Form"):
-            st.session_state.form_started = True
-            st.session_state.start_form_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Capture Start Form Time
-            st.rerun()
+        # ✅ "Start Form" button appears only if form hasn't started
+        if not st.session_state.form_started:
+            if st.button("Start Form"):
+                st.session_state.form_started = True
+                st.session_state.start_form_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Capture Start Form Time
+                st.rerun()
 
         # ✅ Logout button on Start Form Page
         if st.button("Logout", key="logout_start_page"):
             logout()
 
-        # ✅ Form Submission Page
+        # ✅ Form Submission Page (Only displayed if form is started)
         if st.session_state.form_started:
             st.title("Form Submission Page")
             st.write(f"Hello, {st.session_state.username}! Please fill in the form below.")
