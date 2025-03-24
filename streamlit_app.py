@@ -56,5 +56,18 @@ def app():
     sub_lob_options = data[cohort][lob]
     sub_lob = st.selectbox("Select Sub-LOB", options=sub_lob_options)
 
+    # Add the input boxes at the bottom
+    st.subheader("Additional Information")
+
+    # Input Box for MPAN#
+    mpan = st.text_input("MPAN#", "Enter MPAN number")
+
+    # Input Box for Account#
+    account = st.text_input("Account#", "Enter Account number")
+
+    # Display the values (optional, you can comment this out if you don't want to display them)
+    # st.write(f"MPAN#: {mpan}")
+    # st.write(f"Account#: {account}")
+
 if __name__ == "__main__":
     app()
